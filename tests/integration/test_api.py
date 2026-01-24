@@ -17,8 +17,13 @@ class TestAPI:
         """测试根路径"""
         response = client.get("/")
         assert response.status_code == 200
-        data = response.json()
-        assert "message" in data
+        # 根路径在存在前端静态页时会返回 HTML；否则返回 JSON
+        content_type = response.headers.get("content-type", "")
+        if "application/json" in content_type:
+            data = response.json()
+            assert "message" in data
+        else:
+            assert "text/html" in content_type or len(response.content) > 0
     
     def test_health_check(self, client):
         """测试健康检查"""

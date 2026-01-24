@@ -116,6 +116,7 @@ class MultimodalFusionModel(nn.Module):
         self.image_encoder = image_encoder
         self.text_encoder = text_encoder
         self.timeseries_encoder = timeseries_encoder
+        self.fusion_hidden_dim = fusion_hidden_dim
         
         # 确定特征维度
         feature_dims = {}
@@ -141,9 +142,34 @@ class MultimodalFusionModel(nn.Module):
         self.classifier = None
         if num_classes:
             self.classifier = nn.Linear(fusion_hidden_dim, num_classes)
+
+        # 当未提供 encoder / fusion_layer 时，用于将拼接后的“原始特征”投影到 fusion_hidden_dim，
+        # 以确保模型在最小配置下也能前向（便于单元测试与演示）。
+        self._fallback_projector = nn.LazyLinear(fusion_hidden_dim)
         
         logger.info("多模态融合模型已初始化")
     
+    @staticmethod
+    def _to_feature_vector(x: torch.Tensor) -> torch.Tensor:
+        """
+        将输入张量转换为 (B, D) 的特征向量：
+        - image: (B,C,H,W) / (B,C,D,H,W) -> mean pool -> (B,C)
+        - timeseries: (B,T,D) -> mean pool -> (B,D)
+        - already vector: (B,D) -> 原样返回
+        """
+        if x.dim() == 1:
+            return x.unsqueeze(0)
+        if x.dim() == 2:
+            return x
+        # 对除 batch/channel 外的维度做均值池化
+        # 约定：如果形状为 (B, C, ...) 取 spatial mean -> (B, C)
+        # 如果形状为 (B, T, D) 取时间维 mean -> (B, D)
+        if x.dim() == 3:
+            # (B, T, D) 或 (B, C, L)：统一对 dim=1 做 mean
+            return x.mean(dim=1)
+        # (B, C, H, W, ...) -> mean over spatial dims
+        return x.mean(dim=tuple(range(2, x.dim())))
+
     def forward(
         self,
         image: Optional[torch.Tensor] = None,
@@ -185,11 +211,30 @@ class MultimodalFusionModel(nn.Module):
         if self.fusion_layer and features_dict:
             fused_features = self.fusion_layer(features_dict)
         else:
-            # 如果没有融合层，直接拼接特征
+            # 如果没有融合层：
+            # - 若已有 encoder 特征：直接拼接
+            # - 若未提供 encoder：把输入当作“已提取/原始特征”，做轻量池化并拼接，再投影到 fusion_hidden_dim
             if features_dict:
                 fused_features = torch.cat(list(features_dict.values()), dim=-1)
             else:
-                raise ValueError("没有可用的模态特征")
+                raw_feats = []
+                if image is not None:
+                    raw_feats.append(self._to_feature_vector(image))
+                if text is not None:
+                    if isinstance(text, dict):
+                        # 对于字典输入（如 token ids），在无 encoder 情况下无法直接编码
+                        raise ValueError("text 为 dict 时需要提供 text_encoder")
+                    raw_feats.append(self._to_feature_vector(text))
+                if timeseries is not None:
+                    raw_feats.append(self._to_feature_vector(timeseries))
+                if lab_data is not None:
+                    raw_feats.append(self._to_feature_vector(lab_data))
+
+                if not raw_feats:
+                    raise ValueError("没有可用的模态特征")
+
+                concat_features = torch.cat(raw_feats, dim=-1)
+                fused_features = self._fallback_projector(concat_features)
         
         # 分类（如果指定了类别数）
         output = {"features": fused_features}

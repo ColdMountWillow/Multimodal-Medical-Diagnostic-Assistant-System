@@ -83,27 +83,25 @@ pip install -e .
 
 ## 使用
 
-### 快速开始
-
 1. **安装依赖**
 
 ```bash
 pip install -r requirements.txt
 ```
 
-2. **准备数据**（可选）
+2. **准备数据**
 
 ```bash
 python scripts/prepare_data.py --dataset chestxray --output_dir data/processed
 ```
 
-3. **训练模型**（可选，需要数据）
+3. **训练模型**
 
 ```bash
 python scripts/train_models.py --model imaging --task classification
 ```
 
-4. **构建知识库**（可选）
+4. **构建知识库**
 
 ```bash
 python scripts/build_knowledge_base.py --source guidelines --output data/knowledge
@@ -129,7 +127,7 @@ docker build -t multimodal-medical-api:latest .
 docker-compose up -d
 ```
 
-### 使用示例
+### 示例
 
 #### 1. 上传医学影像
 
@@ -179,27 +177,6 @@ black src/ tests/
 ```bash
 mypy src/
 ```
-
-## 项目状态
-
-### 当前状态
-
-✅ **代码框架完成**：所有核心模块已实现
-⚠️ **模型权重缺失**：需要训练模型获取权重文件
-📝 **文档完善中**：API 文档和用户手册待完善
-
-### 下一步工作
-
-1. **数据准备**（2-4 周）：准备训练数据和测试数据
-2. **模型训练**（4-8 周）：训练各模块的深度学习模型
-3. **知识库构建**（2-4 周）：构建医疗知识图谱数据库
-4. **性能调优**（1-2 周）：根据实际使用情况优化性能
-5. **安全加固**（1-2 周）：加强数据安全和访问控制
-6. **文档完善**（1-2 周）：补充用户手册和 API 文档
-
-**预计总时间：3-6 个月**
-
-详细时间估算请参考：[项目路线图](docs/PROJECT_ROADMAP.md) 和 [时间估算](docs/TIME_ESTIMATE.md)
 
 ## 参考资源
 

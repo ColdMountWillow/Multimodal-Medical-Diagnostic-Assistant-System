@@ -6,7 +6,7 @@ import torch
 from monai.transforms import (
     Compose,
     LoadImage,
-    AddChannel,
+    EnsureChannelFirst,
     ScaleIntensity,
     Resize,
     NormalizeIntensity,
@@ -46,7 +46,8 @@ class MultimodalPreprocessor:
         """构建图像变换管道"""
         transforms = [
             LoadImage(image_only=True),
-            AddChannel(),
+            # MONAI 1.4+ 中 AddChannel 已弃用/移除，使用 EnsureChannelFirst 等价替代
+            EnsureChannelFirst(channel_dim="no_channel"),
         ]
         
         if self.image_size:

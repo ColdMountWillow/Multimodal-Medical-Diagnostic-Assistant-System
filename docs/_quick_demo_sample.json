@@ -1,0 +1,341 @@
+{
+  "status": "success",
+  "data": {
+    "analysis_id": "13a8375d-2a1f-4d89-b3bc-147e922b2c42",
+    "patient_info": {
+      "name": "示例患者",
+      "age": 45,
+      "gender": "男"
+    },
+    "symptoms": [
+      "发热",
+      "咳嗽",
+      "胸痛"
+    ],
+    "image_analysis": {
+      "detection": {
+        "lesions_found": 3,
+        "lesions": [
+          {
+            "lesion_id": "lesion_1",
+            "location": {
+              "x": 76,
+              "y": 184,
+              "z": 43
+            },
+            "size": {
+              "width": 22,
+              "height": 14,
+              "depth": 5
+            },
+            "confidence": 0.91,
+            "type": "结节"
+          },
+          {
+            "lesion_id": "lesion_2",
+            "location": {
+              "x": 71,
+              "y": 51,
+              "z": 64
+            },
+            "size": {
+              "width": 11,
+              "height": 20,
+              "depth": 7
+            },
+            "confidence": 0.76,
+            "type": "阴影"
+          },
+          {
+            "lesion_id": "lesion_3",
+            "location": {
+              "x": 159,
+              "y": 93,
+              "z": 61
+            },
+            "size": {
+              "width": 12,
+              "height": 22,
+              "depth": 5
+            },
+            "confidence": 0.81,
+            "type": "积液"
+          }
+        ],
+        "image_quality": "良好"
+      },
+      "segmentation": {
+        "lung_volume": 4795.18,
+        "lesion_volume": 68.0,
+        "segmentation_mask_available": true
+      },
+      "classification": {
+        "top_classes": [
+          {
+            "class": "肺炎",
+            "probability": 0.75
+          },
+          {
+            "class": "肺结核",
+            "probability": 0.23
+          },
+          {
+            "class": "正常",
+            "probability": 0.07
+          }
+        ],
+        "primary_diagnosis": "肺炎",
+        "confidence": 0.75
+      }
+    },
+    "text_analysis": {
+      "entities": [
+        {
+          "text": "发热",
+          "type": "symptom",
+          "confidence": 0.87,
+          "position": 17
+        },
+        {
+          "text": "咳嗽",
+          "type": "symptom",
+          "confidence": 0.81,
+          "position": 21
+        },
+        {
+          "text": "胸痛",
+          "type": "symptom",
+          "confidence": 0.85,
+          "position": 25
+        },
+        {
+          "text": "45",
+          "type": "number",
+          "confidence": 0.9
+        }
+      ],
+      "keywords": [
+        "胸痛",
+        "食欲不振",
+        "咳嗽",
+        "呼吸困难",
+        "乏力"
+      ],
+      "sentiment": "中性",
+      "medical_terms_count": 4
+    },
+    "lab_analysis": {
+      "wbc": {
+        "value": 11.19,
+        "name": "白细胞计数",
+        "unit": "×10⁹/L",
+        "normal_range": "4.0-10.0",
+        "status": "elevated"
+      },
+      "crp": {
+        "value": 57.17,
+        "name": "C反应蛋白",
+        "unit": "mg/L",
+        "normal_range": "0-3.0",
+        "status": "high"
+      },
+      "esr": {
+        "value": 20.49,
+        "name": "血沉",
+        "unit": "mm/h",
+        "normal_range": "0-15",
+        "status": "elevated"
+      }
+    },
+    "timeseries_analysis": {
+      "temperature": {
+        "values": [
+          38.8,
+          37.9,
+          37.5,
+          36.6,
+          36.9,
+          36.7,
+          36.5
+        ],
+        "unit": "°C",
+        "trend": "decreasing",
+        "current": 36.5
+      },
+      "heart_rate": {
+        "values": [
+          79,
+          100,
+          85,
+          75,
+          92,
+          81,
+          81
+        ],
+        "unit": "次/分",
+        "trend": "stable",
+        "current": 81
+      },
+      "respiratory_rate": {
+        "values": [
+          21,
+          16,
+          18,
+          19,
+          19,
+          16,
+          17
+        ],
+        "unit": "次/分",
+        "trend": "stable",
+        "current": 17
+      },
+      "timestamps": [
+        "2026-01-16T22:28:49.626460",
+        "2026-01-17T22:28:49.626460",
+        "2026-01-18T22:28:49.626460",
+        "2026-01-19T22:28:49.626460",
+        "2026-01-20T22:28:49.626460",
+        "2026-01-21T22:28:49.626460",
+        "2026-01-22T22:28:49.626460"
+      ]
+    },
+    "diagnosis": {
+      "primary_diagnosis": "慢性阻塞性肺疾病",
+      "all_diagnoses": [
+        {
+          "disease": "慢性阻塞性肺疾病",
+          "icd10_code": "J44.9",
+          "probability": 0.79,
+          "confidence": "high",
+          "severity": "moderate",
+          "evidence": [
+            "影像显示左肺上叶可见磨玻璃影",
+            "症状与慢性阻塞性肺疾病高度匹配",
+            "实验室检查支持感染性病变"
+          ]
+        },
+        {
+          "disease": "病毒性肺炎",
+          "probability": 0.23,
+          "confidence": "low"
+        }
+      ],
+      "confidence": 0.79,
+      "evidence": [
+        "影像显示左肺上叶可见磨玻璃影",
+        "症状与慢性阻塞性肺疾病高度匹配",
+        "实验室检查支持感染性病变"
+      ],
+      "reasoning_path": [
+        {
+          "step": 1,
+          "description": "影像分析发现肺部异常",
+          "confidence": 0.92
+        },
+        {
+          "step": 2,
+          "description": "症状与诊断高度匹配",
+          "confidence": 0.88
+        },
+        {
+          "step": 3,
+          "description": "实验室检查支持诊断",
+          "confidence": 0.85
+        }
+      ]
+    },
+    "risk_assessment": {
+      "overall_risk": "medium",
+      "risk_scores": {
+        "disease_progression": 0.45,
+        "complication_risk": 0.17,
+        "mortality_risk": 0.06,
+        "readmission_risk": 0.13
+      },
+      "warnings": []
+    },
+    "treatment_plan": {
+      "recommendations": [
+        {
+          "treatment_type": "medication",
+          "name": "头孢曲松",
+          "dosage": "500mg",
+          "frequency": "每日3次",
+          "duration": "7天",
+          "effectiveness_score": 0.95,
+          "safety_score": 0.88
+        },
+        {
+          "treatment_type": "therapy",
+          "name": "氧疗",
+          "dosage": "2-4L/min",
+          "frequency": "持续",
+          "duration": "根据血氧饱和度调整",
+          "effectiveness_score": 0.85,
+          "safety_score": 0.95
+        }
+      ],
+      "duration": "7天",
+      "follow_up": "治疗后3天复查影像"
+    },
+    "chart_data": {
+      "temperature_trend": {
+        "labels": [
+          "2026-01-16T22:28:49.626460",
+          "2026-01-17T22:28:49.626460",
+          "2026-01-18T22:28:49.626460",
+          "2026-01-19T22:28:49.626460",
+          "2026-01-20T22:28:49.626460",
+          "2026-01-21T22:28:49.626460",
+          "2026-01-22T22:28:49.626460"
+        ],
+        "data": [
+          38.8,
+          37.9,
+          37.5,
+          36.6,
+          36.9,
+          36.7,
+          36.5
+        ],
+        "title": "体温趋势"
+      },
+      "lab_values": {
+        "labels": [
+          "wbc",
+          "crp",
+          "esr"
+        ],
+        "values": [
+          11.19,
+          57.17,
+          20.49
+        ],
+        "normal_ranges": [
+          "4.0-10.0",
+          "0-3.0",
+          "0-15"
+        ],
+        "title": "实验室检查结果"
+      },
+      "risk_breakdown": {
+        "labels": [
+          "disease_progression",
+          "complication_risk",
+          "mortality_risk",
+          "readmission_risk"
+        ],
+        "values": [
+          0.45,
+          0.17,
+          0.06,
+          0.13
+        ],
+        "title": "风险评分分解"
+      }
+    },
+    "created_at": "2026-01-23T22:28:49.626460"
+  },
+  "message": "完整分析完成"
+}

@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多模态医疗诊断辅助系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        .main-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin: 20px auto;
+            padding: 30px;
+            max-width: 1400px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        .header h1 {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), #3b82f6);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: bold;
+        }
+        
+        .badge-custom {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        
+        .risk-low { background-color: var(--success-color); color: white; }
+        .risk-medium { background-color: var(--warning-color); color: white; }
+        .risk-high { background-color: var(--danger-color); color: white; }
+        
+        .symptom-tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 5px 12px;
+            border-radius: 15px;
+            margin: 5px;
+            font-size: 0.9em;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        .result-section {
+            margin-top: 30px;
+        }
+        
+        .diagnosis-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 5px solid var(--primary-color);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .treatment-item {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .lab-value {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .lab-value.abnormal {
+            background: #fef2f2;
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #3b82f6);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            padding: 10px 15px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="main-container">
+            <!-- 头部 -->
+            <div class="header">
+                <h1><i class="bi bi-heart-pulse-fill"></i> 多模态医疗诊断辅助系统</h1>
+                <p class="text-muted">基于AI的多模态医疗数据分析与诊断辅助平台</p>
+            </div>
+
+            <!-- 输入表单 -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-person-fill"></i> 患者信息输入
+                </div>
+                <div class="card-body">
+                    <form id="patientForm">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="form-label">患者姓名</label>
+                                <input type="text" class="form-control" id="patientName" value="张三" placeholder="请输入患者姓名">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">年龄</label>
+                                <input type="number" class="form-control" id="patientAge" value="45" min="1" max="120">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">性别</label>
+                                <select class="form-select" id="patientGender">
+                                    <option value="男">男</option>
+                                    <option value="女">女</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label class="form-label">症状（可多选）</label>
+                                <div id="symptomsContainer">
+                                    <label class="symptom-tag">
+                                        <input type="checkbox" value="发热" checked> 发热
+                                    </label>
+                                    <label class="symptom-tag">
+                                        <input type="checkbox" value="咳嗽" checked> 咳嗽
+                                    </label>
+                                    <label class="symptom-tag">
+                                        <input type="checkbox" value="胸痛"> 胸痛
+                                    </label>
+                                    <label class="symptom-tag">
+                                        <input type="checkbox" value="呼吸困难"> 呼吸困难
+                                    </label>
+                                    <label class="symptom-tag">
+                                        <input type="checkbox" value="咳痰"> 咳痰
+                                    </label>
+                                    <label class="symptom-tag">
+                                        <input type="checkbox" value="乏力"> 乏力
+                                    </label>
+                                    <label class="symptom-tag">
+                                        <input type="checkbox" value="食欲不振"> 食欲不振
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-search"></i> 开始分析
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-lg ms-2" onclick="quickDemo()">
+                                    <i class="bi bi-lightning-fill"></i> 快速演示
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 加载中 -->
+            <div id="loadingSection" class="loading" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">加载中...</span>
+                </div>
+                <p class="mt-3">正在分析数据，请稍候...</p>
+            </div>
+
+            <!-- 结果展示区域 -->
+            <div id="resultSection" class="result-section" style="display: none;">
+                
+                <!-- 诊断结果 -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-clipboard2-pulse-fill"></i> 诊断结果
+                    </div>
+                    <div class="card-body">
+                        <div class="diagnosis-card">
+                            <h4 id="primaryDiagnosis">-</h4>
+                            <p class="text-muted mb-2">ICD-10编码: <span id="icd10Code">-</span></p>
+                            <div class="mb-3">
+                                <span class="badge badge-custom bg-primary" id="confidenceBadge">置信度: -</span>
+                                <span class="badge badge-custom" id="severityBadge">严重程度: -</span>
+                            </div>
+                            <div id="diagnosisEvidence"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 风险评估 -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-exclamation-triangle-fill"></i> 风险评估
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <span class="badge badge-custom" id="riskLevelBadge">风险等级: -</span>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <div class="h5" id="progressionRisk">-</div>
+                                    <small class="text-muted">疾病进展风险</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <div class="h5" id="complicationRisk">-</div>
+                                    <small class="text-muted">并发症风险</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <div class="h5" id="mortalityRisk">-</div>
+                                    <small class="text-muted">死亡率风险</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <div class="h5" id="readmissionRisk">-</div>
+                                    <small class="text-muted">再入院风险</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 实验室检查 -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-flask"></i> 实验室检查结果
+                    </div>
+                    <div class="card-body">
+                        <div id="labResults"></div>
+                    </div>
+                </div>
+
+                <!-- 时序数据图表 -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-graph-up"></i> 生命体征趋势
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="temperatureChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 治疗方案 -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-capsule"></i> 治疗方案推荐
+                    </div>
+                    <div class="card-body">
+                        <div id="treatmentPlan"></div>
+                    </div>
+                </div>
+
+                <!-- 影像分析 -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-image"></i> 影像分析结果
+                    </div>
+                    <div class="card-body">
+                        <div id="imageAnalysis">
+                            <p class="text-muted">检测到 <span id="lesionsCount">-</span> 个病灶</p>
+                            <div id="lesionsList"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let temperatureChart = null;
+
+        // 表单提交
+        document.getElementById('patientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await analyzePatient();
+        });
+
+        // 快速演示
+        async function quickDemo() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE}/demo/quick-demo`);
+                const result = await response.json();
+                displayResults(result.data);
+            } catch (error) {
+                alert('请求失败: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 分析患者
+        async function analyzePatient() {
+            showLoading();
+            
+            const symptoms = Array.from(document.querySelectorAll('#symptomsContainer input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
+            
+            const requestData = {
+                patient_name: document.getElementById('patientName').value,
+                age: parseInt(document.getElementById('patientAge').value),
+                gender: document.getElementById('patientGender').value,
+                symptoms: symptoms,
+                has_image: true,
+                has_lab_data: true
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/demo/full-analysis`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const result = await response.json();
+                displayResults(result.data);
+            } catch (error) {
+                alert('分析失败: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 显示结果
+        function displayResults(data) {
+            console.log('收到数据:', data); // 调试用
+            document.getElementById('resultSection').style.display = 'block';
+            
+            try {
+                // 诊断结果
+                const diagnosis = data.diagnosis || {};
+                document.getElementById('primaryDiagnosis').textContent = diagnosis.primary_diagnosis || '-';
+                document.getElementById('icd10Code').textContent = diagnosis.all_diagnoses?.[0]?.icd10_code || '-';
+                document.getElementById('confidenceBadge').textContent = `置信度: ${((diagnosis.confidence || 0) * 100).toFixed(1)}%`;
+                document.getElementById('severityBadge').textContent = `严重程度: ${diagnosis.all_diagnoses?.[0]?.severity || '-'}`;
+                
+                // 诊断依据 - 优先使用 diagnosis.evidence，如果没有则使用 all_diagnoses[0].evidence，最后使用 reasoning_path
+                let evidenceList = [];
+                if (diagnosis.evidence && Array.isArray(diagnosis.evidence)) {
+                    evidenceList = diagnosis.evidence;
+                } else if (diagnosis.all_diagnoses?.[0]?.evidence && Array.isArray(diagnosis.all_diagnoses[0].evidence)) {
+                    evidenceList = diagnosis.all_diagnoses[0].evidence;
+                } else if (diagnosis.reasoning_path && Array.isArray(diagnosis.reasoning_path)) {
+                    evidenceList = diagnosis.reasoning_path.map(rp => rp.description || rp);
+                }
+                
+                const evidenceHtml = evidenceList.length > 0 
+                    ? evidenceList.map(e => 
+                        `<div class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> ${e}</div>`
+                    ).join('')
+                    : '<p class="text-muted">暂无诊断依据</p>';
+                document.getElementById('diagnosisEvidence').innerHTML = evidenceHtml;
+
+                // 风险评估
+                const risk = data.risk_assessment || {};
+                const riskLevel = risk.overall_risk || 'low';
+                const riskClass = `risk-${riskLevel}`;
+                document.getElementById('riskLevelBadge').textContent = `风险等级: ${riskLevel.toUpperCase()}`;
+                document.getElementById('riskLevelBadge').className = `badge badge-custom ${riskClass}`;
+                
+                const riskScores = risk.risk_scores || {};
+                document.getElementById('progressionRisk').textContent = riskScores.disease_progression 
+                    ? (riskScores.disease_progression * 100).toFixed(1) + '%' : '-';
+                document.getElementById('complicationRisk').textContent = riskScores.complication_risk 
+                    ? (riskScores.complication_risk * 100).toFixed(1) + '%' : '-';
+                document.getElementById('mortalityRisk').textContent = riskScores.mortality_risk 
+                    ? (riskScores.mortality_risk * 100).toFixed(1) + '%' : '-';
+                document.getElementById('readmissionRisk').textContent = riskScores.readmission_risk 
+                    ? (riskScores.readmission_risk * 100).toFixed(1) + '%' : '-';
+
+                // 实验室检查
+                displayLabResults(data.lab_analysis || {});
+
+                // 时序图表
+                if (data.timeseries_analysis) {
+                    displayTemperatureChart(data.timeseries_analysis);
+                } else {
+                    document.getElementById('temperatureChart').parentElement.innerHTML = '<p class="text-muted">暂无时序数据</p>';
+                }
+
+                // 治疗方案
+                displayTreatmentPlan(data.treatment_plan || {});
+
+                // 影像分析
+                displayImageAnalysis(data.image_analysis || {});
+
+                // 滚动到结果区域
+                document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                console.error('显示结果时出错:', error);
+                alert('显示结果时出错: ' + error.message);
+            }
+        }
+
+        // 显示实验室检查结果
+        function displayLabResults(labData) {
+            if (!labData || Object.keys(labData).length === 0) {
+                document.getElementById('labResults').innerHTML = '<p class="text-muted">暂无数据</p>';
+                return;
+            }
+
+            const html = Object.values(labData).map(item => {
+                const isAbnormal = item.status !== 'normal';
+                return `
+                    <div class="lab-value ${isAbnormal ? 'abnormal' : ''}">
+                        <div>
+                            <strong>${item.name}</strong>
+                            <br>
+                            <small class="text-muted">正常范围: ${item.normal_range}</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="h5 mb-0">${item.value} ${item.unit}</div>
+                            <span class="badge ${isAbnormal ? 'bg-danger' : 'bg-success'}">${item.status}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('labResults').innerHTML = html;
+        }
+
+        // 显示体温图表
+        function displayTemperatureChart(timeseriesData) {
+            if (!timeseriesData || !timeseriesData.temperature || !timeseriesData.timestamps) {
+                console.error('时序数据格式不正确:', timeseriesData);
+                return;
+            }
+            
+            const ctx = document.getElementById('temperatureChart');
+            if (!ctx) {
+                console.error('找不到图表容器');
+                return;
+            }
+            
+            if (temperatureChart) {
+                temperatureChart.destroy();
+            }
+
+            const labels = timeseriesData.timestamps.map(ts => {
+                try {
+                    const date = new Date(ts);
+                    return `${date.getMonth()+1}/${date.getDate()}`;
+                } catch (e) {
+                    return ts;
+                }
+            });
+
+            const temperatureValues = timeseriesData.temperature?.values || [];
+            const heartRateValues = timeseriesData.heart_rate?.values || [];
+
+            temperatureChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '体温 (°C)',
+                            data: temperatureValues,
+                            borderColor: 'rgb(239, 68, 68)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: '心率 (次/分)',
+                            data: heartRateValues,
+                            borderColor: 'rgb(37, 99, 235)',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: '体温 (°C)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: '心率 (次/分)'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 显示治疗方案
+        function displayTreatmentPlan(treatmentPlan) {
+            if (!treatmentPlan || !treatmentPlan.recommendations || treatmentPlan.recommendations.length === 0) {
+                document.getElementById('treatmentPlan').innerHTML = '<p class="text-muted">暂无治疗方案</p>';
+                return;
+            }
+            
+            const html = treatmentPlan.recommendations.map(treatment => `
+                <div class="treatment-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5><i class="bi bi-capsule"></i> ${treatment.name || '-'}</h5>
+                            <p class="mb-1"><strong>用法用量:</strong> ${treatment.dosage || '-'}，${treatment.frequency || '-'}</p>
+                            <p class="mb-1"><strong>疗程:</strong> ${treatment.duration || '-'}</p>
+                            <small class="text-muted">有效性: ${treatment.effectiveness_score ? (treatment.effectiveness_score * 100).toFixed(0) + '%' : '-'} | 
+                            安全性: ${treatment.safety_score ? (treatment.safety_score * 100).toFixed(0) + '%' : '-'}</small>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('treatmentPlan').innerHTML = html;
+        }
+
+        // 显示影像分析
+        function displayImageAnalysis(imageData) {
+            if (!imageData || !imageData.detection) {
+                document.getElementById('imageAnalysis').innerHTML = '<p class="text-muted">暂无影像数据</p>';
+                return;
+            }
+
+            const detection = imageData.detection || {};
+            const lesionsFound = detection.lesions_found || 0;
+            document.getElementById('lesionsCount').textContent = lesionsFound;
+            
+            if (!detection.lesions || detection.lesions.length === 0) {
+                document.getElementById('lesionsList').innerHTML = '<p class="text-muted">未检测到病灶</p>';
+                return;
+            }
+            
+            const lesionsHtml = detection.lesions.map(lesion => `
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h6>病灶 ${lesion.lesion_id || '-'}</h6>
+                        <p class="mb-1"><strong>位置:</strong> (${lesion.location?.x || '-'}, ${lesion.location?.y || '-'}, ${lesion.location?.z || '-'})</p>
+                        <p class="mb-1"><strong>大小:</strong> ${lesion.size?.width || '-'} × ${lesion.size?.height || '-'} × ${lesion.size?.depth || '-'}</p>
+                        <p class="mb-1"><strong>类型:</strong> ${lesion.type || '-'}</p>
+                        <span class="badge bg-info">置信度: ${lesion.confidence ? (lesion.confidence * 100).toFixed(1) + '%' : '-'}</span>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('lesionsList').innerHTML = lesionsHtml;
+        }
+
+        // 显示/隐藏加载
+        function showLoading() {
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingSection').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

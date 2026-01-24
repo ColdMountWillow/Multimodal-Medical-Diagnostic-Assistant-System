@@ -62,7 +62,8 @@ class ImageSegmentation(nn.Module):
         
         # 损失函数
         self.dice_loss = DiceLoss(to_onehot_y=True, softmax=True)
-        self.focal_loss = FocalLoss(to_onehot_y=True, softmax=True)
+        # MONAI 1.4+：FocalLoss 使用 use_softmax 参数
+        self.focal_loss = FocalLoss(to_onehot_y=True, use_softmax=True)
         
         # 推理器
         roi_size = (96, 96, 96) if spatial_dims == 3 else (256, 256)

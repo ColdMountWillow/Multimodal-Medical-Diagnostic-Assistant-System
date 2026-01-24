@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 from monai.transforms import (
     Compose,
     LoadImage,
-    AddChannel,
+    EnsureChannelFirst,
     ScaleIntensity,
     NormalizeIntensity,
     Resize,
@@ -32,7 +32,8 @@ def get_train_transforms(
     """
     transforms = [
         LoadImage(image_only=True),
-        AddChannel(),
+        # MONAI 1.4+ 中 AddChannel 已弃用/移除，使用 EnsureChannelFirst 等价替代
+        EnsureChannelFirst(channel_dim="no_channel"),
     ]
     
     if spatial_size:
@@ -71,7 +72,8 @@ def get_val_transforms(
     """
     transforms = [
         LoadImage(image_only=True),
-        AddChannel(),
+        # MONAI 1.4+ 中 AddChannel 已弃用/移除，使用 EnsureChannelFirst 等价替代
+        EnsureChannelFirst(channel_dim="no_channel"),
     ]
     
     if spatial_size:
